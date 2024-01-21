@@ -8,7 +8,8 @@ import {Input, Button} from "@nextui-org/react";
 import { useFormik } from 'formik';
 
 const SignupSchema = Yup.object().shape({
-
+  firstName: Yup.string()
+   .required('Required'),
   email: Yup.string()
     .min(2, 'Too Short!')
     .max(50, 'Too Long!')
@@ -63,10 +64,13 @@ const Register = () => {
   }
   return(
   <div>
+    <div className='center'>
+    <h1 >Signup</h1>
+    </div>
     <form onSubmit={formik.handleSubmit}>
-    <h1>Signup</h1>
+    <br/>
     <Input
-         id = "email"
+         id = "firstName"
           label="First Name"
           name="firstName"
           onChange={formik.handleChange}
