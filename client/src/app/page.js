@@ -2,6 +2,8 @@
 import React from "react";
 import {Button} from "@nextui-org/react";
 import { useRouter } from 'next/navigation';
+import { UseSelector } from "react-redux";
+
 const home = () => {
   const router = useRouter();
 
