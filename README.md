@@ -13,10 +13,10 @@ Designed as a global platform, it facilitates connections among the users. Users
 
 ## Features
 - [x] Register/Login
-- [ ] View User List
+- [x] View User List
+- [ ] Delete/Update account
 - [ ] Search User
 - [ ] Send text messages
 - [ ] Delete chat
-- [ ] Block User
 ## Liscense
 Distributed under the MIT License.
