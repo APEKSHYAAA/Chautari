@@ -6,6 +6,8 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import {Input, Button} from "@nextui-org/react";
 import { useFormik } from 'formik';
+import { useSelector } from 'react-redux';
+import FormSection from '@/components/FormSection/page';
 
 const SignupSchema = Yup.object().shape({
   firstName: Yup.string()
@@ -39,7 +41,7 @@ const Register = () => {
   });
   const handleRegister = async(inputFields)=>{
     try{
-      const res = await fetch('http://localhost:5000/register/',{
+      const res = await fetch('http://localhost:8000/register/',{
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(inputFields)
@@ -63,10 +65,10 @@ const Register = () => {
   
   }
   return(
-  <div>
-    <div className='center'>
+    <FormSection>
+    
     <h1 >Signup</h1>
-    </div>
+   
     <form onSubmit={formik.handleSubmit}>
     <br/>
     <Input
@@ -111,11 +113,11 @@ const Register = () => {
         />
        {formik?.errors.password}
           <br/>
-          <Button  type="submit" color="primary" variant="flat">
+          <Button  type="submit" color="danger" variant="flat">
         Register
       </Button>  
         </form>
-  </div>
+  </FormSection>
 )}
 
 export default Register

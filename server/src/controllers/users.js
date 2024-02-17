@@ -37,11 +37,11 @@ const loginUser = async (req, res) => {
       if (matched) {
         const token = jwt.sign(
           { email: userDetails.email },
-          process?.env.SECRET_KEY
+          process?.env.secret_key
         );
-        return res.status(201).json({ msg: "Login Successfully", token, userDetails });
+        return res.status(200).json({ msg: "Login Successfully", token, userDetails });
       } else {
-        return res.status(403).json({ msg: "Password didn't match" });
+        return res.status(403).json({ msg: "Password didn't match"});
       }
     } else {
       return res.status(401).json({ msg: "Email not found" });
@@ -52,4 +52,12 @@ const loginUser = async (req, res) => {
   }
 };
 
-module.exports = {loginUser, registerNewUser}
+const getAllUsers =  async(req,res) => {
+ 
+    const userList= await User.find();
+    return res.json(userList);
+  }
+  
+
+
+module.exports = {loginUser, registerNewUser , getAllUsers, }

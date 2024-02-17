@@ -6,11 +6,6 @@ const userschema = new Schema({
   password: String,
   firstName: String,
   lastName: String,
-  role: {
-    type: String,
-    enum : ['User'],
-    default: 'User'
-    }
 });
 
 const User = mongoose.model('User', userschema);

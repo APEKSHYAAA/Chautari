@@ -4,10 +4,11 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
-import {Input, Button} from "@nextui-org/react";
 import { useFormik } from 'formik';
 import { useDispatch } from 'react-redux';
 import { loginUser } from '@/redux/reducerSlices/userSlice'
+import {Input, Button} from "@nextui-org/react";
+import FormSection from '@/components/FormSection/page';
 
 
 const SignupSchema = Yup.object().shape({
@@ -22,7 +23,7 @@ const SignupSchema = Yup.object().shape({
 });
 
 
-const Login = () => {
+const Login = ({children}) => {
   const router = useRouter()
   const dispatch = useDispatch()
   const formik = useFormik({
@@ -38,20 +39,19 @@ const Login = () => {
   });
   const handleLogin = async(inputFields)=>{
     try{
-      const res = await fetch('http://localhost:5000/login/',{
+      const res = await fetch('http://localhost:8000/login/',{
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(inputFields)
       })
       const data = await res.json()
-      if(res.status == 201){
+      if(res.status == 200){
         dispatch(loginUser(data))
-        router.push('/main')
+       router.push('/main')
       }
-      console.log(1)
       toast( data.msg,
           {
-            icon: res.status == 201 ? '✅' : '❌',
+            icon: res.status == 200 ? '✅' : '❌',
             style: {
               borderRadius: '10px',
               background: '#333',
@@ -64,63 +64,45 @@ const Login = () => {
     }
   
   }
-  return (
-    <div>
-    <div className='center'>
-    <h1 >Login</h1>
-    </div>
-    <form >
+  return(
+    
+        <FormSection>
+        <h1 className='mb-4 '>Login </h1>
+        <form onSubmit={formik.handleSubmit}>
+        
         <Input
         id="email"
           label="Email"
           name="email"
-          placeholder="enter email"
+          onChange={ formik.handleChange}
+          value={formik.values.email}
+          placeholder="Enter Email"
           labelPlacement="outside"
         />
+       {formik?.errors.email}
           <br/>
           <Input
           type="password"
           name="password"
+          value={formik.values.password}
+          onChange={ formik.handleChange}
           label="password"
-          placeholder="enter password"
+          placeholder="Enter password"
           labelPlacement="outside"
         />
+       {formik?.errors.password}
           <br/>
-          <Button  type="submit" color="primary" variant="flat">
+          <Button  type="submit" color="danger" variant="flat">
         Login
-      </Button>  
+      </Button>   
         </form>
-  </div>
-)
-}
-export default  Login
+        <br/> 
+        {children}
+        </FormSection>
+ 
+  
+)}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+export default Login
 
 

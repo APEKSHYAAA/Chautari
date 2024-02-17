@@ -23,20 +23,3 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
-form {
-  background-color: rgb(226, 240, 245);
-  max-width: 30vw;
-  max-height: 50%;
-  align-self: center;
-  border-radius: 2%;
-  border: groove;
-  border-width: 0.5px;
-  padding: 1%;
-  border-top-left-radius: 0%;
-}
-.center {
-  width: 6%;
-  border: groove;
-  border-width: 0.5px;
-  background-color: rgb(121, 197, 207);
-}
