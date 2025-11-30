@@ -1,78 +1,176 @@
 'use client'
 import React, { useState, useEffect } from "react";
-import {Listbox, ListboxItem, Chip, ScrollShadow, Avatar} from "@nextui-org/react";
+import {Listbox, ListboxItem, Avatar} from "@nextui-org/react";
 import {ListboxWrapper} from "./ListboxWrapper";
+import { useSelector } from "react-redux";
 
-const Table = ({ list }) => {
-  const [values, setValues] = React.useState(new Set(["1"]));
+const Table = ({ list, searchQuery, onUserSelect }) => {
+  const [selectedUser, setSelectedUser] = React.useState(null);
   
-  const arrayValues = Array.from(values);
-
-  const topContent = React.useMemo(() => {
-    if (!arrayValues.length) {
-      return null;
+  // Enhanced search that handles "firstName + space + lastName"
+  const filteredList = React.useMemo(() => {
+    if (!searchQuery.trim()) {
+      return list;
     }
+    
+    const query = searchQuery.toLowerCase().trim();
+    const queryParts = query.split(/\s+/);
+    
+    return list.filter(user => {
+      const fullName = `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase().trim();
+      const email = user.email?.toLowerCase() || '';
+      const firstName = user.firstName?.toLowerCase() || '';
+      const lastName = user.lastName?.toLowerCase() || '';
+      
+      if (queryParts.length > 1) {
+        const matchesFullName = fullName.includes(query);
+        const matchesFirstAndLast = 
+          (firstName.includes(queryParts[0]) && lastName.includes(queryParts[1])) ||
+          (firstName.includes(queryParts[1]) && lastName.includes(queryParts[0]));
+        
+        if (matchesFullName || matchesFirstAndLast) {
+          return true;
+        }
+      }
+      
+      return (
+        firstName.includes(query) ||
+        lastName.includes(query) ||
+        email.includes(query) ||
+        fullName.includes(query)
+      );
+    });
+  }, [list, searchQuery]);
 
+  const handleUserClick = (user) => {
+    setSelectedUser(user);
+    if (onUserSelect) {
+      onUserSelect(user);
+    }
+  };
+
+  const getItemKey = (item) => {
+    return item.id || item.email || `${item.firstName}-${item.lastName}` || Math.random().toString(36);
+  };
+
+  if (filteredList.length === 0) {
     return (
-      <ScrollShadow
-        hideScrollBar
-        className="w-full flex py-0.5 px-2 gap-1"
-        orientation="horizontal"
-      >
-        {arrayValues.map((value) => {
-          const user = list.find((user) => `${user.id}` === `${value}`);
-          return user ? <Chip key={value}>{user.firstName}</Chip> : null;
-        })}
-      </ScrollShadow>
+      <ListboxWrapper>
+        <div className="max-w-xs h-[91vh] overflow-auto flex items-center justify-center bg-pink-25">
+          <div className="text-center text-gray-500">
+            {searchQuery.trim() ? "No users found matching your search." : "No users available."}
+          </div>
+        </div>
+      </ListboxWrapper>
     );
-  }, [arrayValues, list]);
+  }
 
   return (
     <ListboxWrapper>
       <Listbox
-        topContent={topContent}
         classNames={{
-          base: "max-w-xs h-[91vh] overflow-auto ",
-          list: "max-h-[300px]",
+          base: "max-w-xs h-[91vh] overflow-auto bg-white",
+          list: "max-h-[300px] overflow-auto",
         }}
-        items={list}
-        label="Assigned to"
-        selectionMode="single"
-        onSelectionChange={setValues}
+        items={filteredList}
+        label="Users"
         variant="flat"
       >
-        {list.map((item, index) => (
-  <ListboxItem key={item.id || index} textValue={item.name}>
+        {(item) => (
+          <ListboxItem 
+            key={getItemKey(item)} 
+            textValue={item.name || `${item.firstName} ${item.lastName}`}
+            onClick={() => handleUserClick(item)}
+            className={`cursor-pointer transition-all duration-200 ${
+              selectedUser?.id === item.id 
+                ? 'bg-pink-100 border-l-4 border-gray-500 shadow-sm' 
+                : 'hover:bg-pink-50'
+            }`}
+          >
             <div className="flex gap-2 items-center">
-              <Avatar alt={item.name} className="flex-shrink-0" size="sm" src={item.avatar} />
+              <Avatar 
+                alt={item.name || `${item.firstName} ${item.lastName}`} 
+                className="flex-shrink-0 border-2 border-gray-200" 
+                size="sm" 
+                src={item.avatar} 
+              />
               <div className="flex flex-col">
-                <span className="text-medium text-danger">{item.firstName} {item.lastName} </span>
-                <span className="text-small text-black-400">{item.email}</span>
+                <span className={`text-medium font-semibold ${
+                  selectedUser?.id === item.id ? 'text-gray-800' : 'text-gray-900'
+                }`}>
+                  {item.firstName} {item.lastName} 
+                </span>
+                <span className="text-small text-gray-600">{item.email}</span>
               </div>
             </div>
           </ListboxItem>
-        ))}
+        )}
       </Listbox>
     </ListboxWrapper>
   );
 }
 
-const Page = () => {
+const Page = ({ searchQuery = '', onUserSelect }) => {
   const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { userDetails } = useSelector(state => state.user);
 
   useEffect(() => {
     const fetchList = async () => {
-      const res = await fetch('http://localhost:8000/userList');
-      const data = await res.json();
-      setList(data);
+      try {
+        setLoading(true);
+        const res = await fetch('http://localhost:8000/userList');
+        if (!res.ok) {
+          throw new Error('Failed to fetch users');
+        }
+        const data = await res.json();
+        
+        const processedData = data.map((item, index) => ({
+          ...item,
+          id: item.id || item._id || index
+        }));
+        
+        setList(processedData);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching user list:', err);
+        setError('Failed to load users');
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchList();
   }, []);
-console.log(list)
+
+  const filteredList = React.useMemo(() => {
+    return list.filter(item => item.email !== userDetails?.email);
+  }, [list, userDetails?.email]);
+
+  if (loading) {
+    return (
+      <ListboxWrapper>
+        <div className="max-w-xs h-[91vh] overflow-auto flex items-center justify-center bg-white">
+          <div className="text-center text-gray-500">Loading users...</div>
+        </div>
+      </ListboxWrapper>
+    );
+  }
+
+  if (error) {
+    return (
+      <ListboxWrapper>
+        <div className="max-w-xs h-[91vh] overflow-auto flex items-center justify-center bg-white">
+          <div className="text-center text-gray-600">{error}</div>
+        </div>
+      </ListboxWrapper>
+    );
+  }
+
   return (
     <>
-      {list.length > 0 && <Table list={list} />}
+      <Table list={filteredList} searchQuery={searchQuery} onUserSelect={onUserSelect} />
     </>
   );
 }
