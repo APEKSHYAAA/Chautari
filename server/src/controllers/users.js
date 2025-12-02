@@ -2,6 +2,26 @@ const User = require('../models/users')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const saltRounds = 10;
+const Chat = require('../models/chat')
+
+const getChatSenderReceiver = async (req, res) => {
+  try {
+    const { senderId, receiverId } = req.query;
+
+    const chatList = await Chat.find({
+      $or: [
+        { senderId, receiverId },
+        { senderId: receiverId, receiverId: senderId }
+      ]
+    }).sort({ createdAt: 1 }); // oldest → newest
+
+    return res.json({ chatList });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 const registerNewUser = async(req, res) => {
   try{
@@ -60,4 +80,4 @@ const getAllUsers =  async(req,res) => {
   
 
 
-module.exports = {loginUser, registerNewUser , getAllUsers, }
+module.exports = {loginUser, registerNewUser , getAllUsers, getChatSenderReceiver}
