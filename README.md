@@ -14,9 +14,9 @@ Designed as a global platform, it facilitates connections among the users. Users
 ## Features
 - [x] Register/Login
 - [x] View User List
-- [ ] Delete/Update account
-- [ ] Search User
-- [ ] Send text messages
-- [ ] Delete chat
+- [x] Update account
+- [x] Search User
+- [x] Send text messages
+
 ## Liscense
 Distributed under the MIT License.
